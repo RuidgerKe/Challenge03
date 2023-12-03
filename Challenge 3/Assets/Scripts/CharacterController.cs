@@ -10,6 +10,10 @@ public class ExtendedThirdPersonMovement : MonoBehaviour
     public float crouchHeight = 0.5f;
     public float standingHeight = 2f;
 
+    public float off = 0f;
+    public float on = 1f;
+    private int CrouchIndexLayer;
+
     private CharacterController characterController;
     private float targetHeight;
     private bool isCrouching = false;
@@ -21,6 +25,7 @@ public class ExtendedThirdPersonMovement : MonoBehaviour
         targetHeight = characterController.height;
         animator = GetComponent<Animator>();
         Debug.Log(animator);
+        CrouchIndexLayer = animator.GetLayerIndex("Crouch");
     }
 
     void Update()
@@ -32,6 +37,14 @@ public class ExtendedThirdPersonMovement : MonoBehaviour
         {
             ToggleCrouch();
             animator.SetBool("isCrouching", true);
+            animator.SetLayerWeight(CrouchIndexLayer, on);
+        }
+
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            
+            animator.SetBool("isCrouching", false);
+            animator.SetLayerWeight(CrouchIndexLayer, off);
         }
 
         // Toggle crawl
@@ -40,6 +53,7 @@ public class ExtendedThirdPersonMovement : MonoBehaviour
             ToggleCrawl();
             animator.SetBool("isCrawling", true);
         }
+       
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {

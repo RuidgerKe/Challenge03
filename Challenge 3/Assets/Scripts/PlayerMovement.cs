@@ -20,7 +20,10 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     Animator animator;
-    
+
+    public float off = 0f;
+    public float on = 1f;
+    private int CrouchIndexLayer;
     private float groundDistance = 0.4f;
     private bool isGrounded;
 
@@ -28,17 +31,21 @@ public class PlayerMovement : MonoBehaviour
     private bool isCrouching;
     private bool isCrawling;
 
+
     private void Start()
     {
         controller = GetComponent<CharacterController>();
         controller.height = defaultHeight;
         animator = GetComponent<Animator>();
+        CrouchIndexLayer = animator.GetLayerIndex("Crouch");
+      
     }
 
     void Update()
     {
+        bool isWalking = animator.GetBool("isWalking");
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        if (Input.GetKeyDown(KeyCode.C)) ToggleCrouch();
+        //if (Input.GetKeyDown(KeyCode.C)) ToggleCrouch();
         if (Input.GetKeyDown(KeyCode.LeftControl)) ToggleCrawl();
 
         if (isGrounded && velocity.y < 0) velocity.y = -2f;
@@ -50,33 +57,47 @@ public class PlayerMovement : MonoBehaviour
         
         float speed = walkSpeed;
 
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W))
         {
             animator.SetBool("isWalking", true);
             animator.SetBool("isRunning", false);
         }
-        if (Input.GetKey(KeyCode.LeftShift) && !isCrouching)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isCrouching)
         {
             speed = runSpeed;
             print("Running");
             animator.SetBool("isRunning", true);
             animator.SetBool("isWalking", false);
         }
-        else if (isCrouching)
-        {
-            speed = crouchSpeed;
-            print("Crouching");
-            animator.SetBool("isCrouching", true);
-        }
+      
+    
         else if (isCrawling)
         {
             speed = crawlSpeed;
             print("Crawling");
             animator.SetBool("isCrawling", true);
         }
-        
+        else if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.W) && isWalking == true)
+        {
+            animator.SetBool("isWalking", false);
+            animator.SetBool("isRunning", false);
+        }
+
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            ToggleCrouch();
+            animator.SetBool("isCrouching", true);
+            animator.SetLayerWeight(CrouchIndexLayer, on);
+        }
+
+        else if (Input.GetKeyUp(KeyCode.C))
+        {
+
+            animator.SetBool("isCrouching", false);
+            animator.SetLayerWeight(CrouchIndexLayer, off);
+        }
         controller.Move(move * speed * Time.deltaTime);
-        
+       
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
